@@ -203,17 +203,80 @@
         </Grid>
 
         <Grid x:Name="AdminPanel" Margin="34" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
           <StackPanel>
             <TextBlock Text="Admin" FontSize="30" FontWeight="Bold"/>
-            <TextBlock Text="Área administrativa inicial do 7zy X." Foreground="{StaticResource MutedBrush}"/>
-            <Border Style="{StaticResource CardStyle}" Margin="0,22,0,0">
-              <StackPanel>
-                <TextBlock Text="Controle de compradores" FontSize="20" FontWeight="Bold"/>
-                <TextBlock Text="Nesta primeira build o fluxo Admin/Comprador já existe. O cadastro remoto/licenciamento será conectado numa etapa separada para não depender de credenciais locais."
-                           TextWrapping="Wrap" Margin="0,8,0,0"/>
-              </StackPanel>
-            </Border>
+            <TextBlock Text="Gerencie compradores e validade de acesso." Foreground="{StaticResource MutedBrush}"/>
           </StackPanel>
+
+          <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,20,0,14">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="140"/>
+              </Grid.ColumnDefinitions>
+
+              <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                <TextBlock Text="Usuário" FontWeight="SemiBold"/>
+                <TextBox x:Name="AdminUsernameBox" Height="38" Margin="0,6,0,0"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                <TextBlock Text="Senha" FontWeight="SemiBold"/>
+                <PasswordBox x:Name="AdminPasswordBox" Height="38" Margin="0,6,0,0"/>
+              </StackPanel>
+
+              <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                <TextBlock Text="Validade (dias)" FontWeight="SemiBold"/>
+                <TextBox x:Name="AdminValidityBox" Text="30" Height="38" Margin="0,6,0,0"/>
+              </StackPanel>
+
+              <Button Grid.Column="3" Content="Criar comprador"
+                      VerticalAlignment="Bottom" Height="38"
+                      Style="{StaticResource GoldButton}" Click="CreateBuyer_Click"/>
+            </Grid>
+          </Border>
+
+          <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+            <DataGrid x:Name="AdminUsersGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      CanUserAddRows="False"
+                      SelectionMode="Single"
+                      BorderThickness="0"
+                      Background="White">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Usuário" Binding="{Binding Username}" Width="*"/>
+                <DataGridTextColumn Header="Perfil" Binding="{Binding Role}" Width="130"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="130"/>
+                <DataGridTextColumn Header="Expiração" Binding="{Binding Expiration}" Width="210"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </Border>
+
+          <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0,14,0,0">
+            <DockPanel>
+              <TextBlock x:Name="AdminStatus" Text="Selecione uma conta para gerenciar."
+                         VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"/>
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Renovar validade" Margin="8,0,0,0"
+                        Style="{StaticResource OutlineButton}" Click="ExtendBuyer_Click"/>
+                <Button Content="Bloquear / Desbloquear" Margin="8,0,0,0"
+                        Style="{StaticResource OutlineButton}" Click="ToggleBuyer_Click"/>
+                <Button Content="Remover" Margin="8,0,0,0"
+                        Style="{StaticResource GoldButton}" Click="DeleteBuyer_Click"/>
+              </StackPanel>
+            </DockPanel>
+          </Border>
         </Grid>
       </Grid>
     </Grid>

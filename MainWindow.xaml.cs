@@ -40,7 +40,7 @@ public partial class MainWindow : Window
 
         if (!result.Ok)
         {
-            LoginStatus.Text = "Usuário ou senha inválidos.";
+            LoginStatus.Text = string.IsNullOrWhiteSpace(_auth.LastError) ? "Usuário ou senha inválidos." : _auth.LastError;
             LoginButton.Content = "Entrar";
             LoginButton.IsEnabled = true;
             return;
@@ -65,7 +65,11 @@ public partial class MainWindow : Window
 
     private void Home_Click(object sender, RoutedEventArgs e) => ShowPanel(HomePanel);
     private void Optimization_Click(object sender, RoutedEventArgs e) => ShowPanel(OptimizationPanel);
-    private void Admin_Click(object sender, RoutedEventArgs e) => ShowPanel(AdminPanel);
+    private void Admin_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshAdminUsers();
+        ShowPanel(AdminPanel);
+    }
 
     private void Logout_Click(object sender, RoutedEventArgs e)
     {
@@ -178,6 +182,96 @@ public partial class MainWindow : Window
         RevertButton.Content = "Reverter selecionados";
         ApplyButton.IsEnabled = true;
         RevertButton.IsEnabled = true;
+    }
+
+    private void CreateBuyer_Click(object sender, RoutedEventArgs e)
+    {
+        if (!int.TryParse(AdminValidityBox.Text, out var days))
+        {
+            AdminStatus.Text = "Informe uma validade em dias.";
+            return;
+        }
+
+        if (_auth.CreateBuyer(AdminUsernameBox.Text, AdminPasswordBox.Password, days, out var error))
+        {
+            AdminStatus.Text = "Comprador criado com sucesso.";
+            AdminUsernameBox.Text = "";
+            AdminPasswordBox.Password = "";
+            RefreshAdminUsers();
+        }
+        else
+        {
+            AdminStatus.Text = error;
+        }
+    }
+
+    private void ToggleBuyer_Click(object sender, RoutedEventArgs e)
+    {
+        if (AdminUsersGrid.SelectedItem is not UserAccountInfo user)
+        {
+            AdminStatus.Text = "Selecione uma conta.";
+            return;
+        }
+
+        if (_auth.ToggleBlocked(user.Username, out var error))
+        {
+            AdminStatus.Text = "Status da conta atualizado.";
+            RefreshAdminUsers();
+        }
+        else
+        {
+            AdminStatus.Text = error;
+        }
+    }
+
+    private void ExtendBuyer_Click(object sender, RoutedEventArgs e)
+    {
+        if (AdminUsersGrid.SelectedItem is not UserAccountInfo user)
+        {
+            AdminStatus.Text = "Selecione uma conta.";
+            return;
+        }
+
+        if (!int.TryParse(AdminValidityBox.Text, out var days))
+        {
+            AdminStatus.Text = "Informe a nova validade em dias.";
+            return;
+        }
+
+        if (_auth.SetValidityDays(user.Username, days, out var error))
+        {
+            AdminStatus.Text = "Validade renovada.";
+            RefreshAdminUsers();
+        }
+        else
+        {
+            AdminStatus.Text = error;
+        }
+    }
+
+    private void DeleteBuyer_Click(object sender, RoutedEventArgs e)
+    {
+        if (AdminUsersGrid.SelectedItem is not UserAccountInfo user)
+        {
+            AdminStatus.Text = "Selecione uma conta.";
+            return;
+        }
+
+        if (_auth.DeleteBuyer(user.Username, out var error))
+        {
+            AdminStatus.Text = "Conta removida.";
+            RefreshAdminUsers();
+        }
+        else
+        {
+            AdminStatus.Text = error;
+        }
+    }
+
+    private void RefreshAdminUsers()
+    {
+        AdminUsersGrid.ItemsSource = _auth.GetUsers();
+        AdminUsersGrid.Items.Refresh();
     }
 
     private void RefreshPercent()

@@ -266,7 +266,6 @@
               <Button Content="OBS (BN)" Tag="OBS_MODIFICADO_BN.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
               <Button Content="TikTok Chat • 7zy" Tag="7ZY_TikTok_Chat_v3.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
               <Button Content="Spotify Lite" Tag="SPOTFY_LITE.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
-              <Button Content="CFG BN" Tag="CFG BN.txt" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
             </WrapPanel>
           </ScrollViewer>
           <Border Grid.Row="2" Style="{StaticResource CardStyle}">

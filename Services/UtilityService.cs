@@ -24,17 +24,22 @@ public sealed class UtilityService
             installed.Message.Contains(packageId, StringComparison.OrdinalIgnoreCase))
             return "Esse aplicativo já está instalado.";
 
-        var args =
-            $"install --id {packageId} -e --silent " +
+        var silentArgs =
+            $"install --id {packageId} -e --source winget --silent " +
             "--accept-source-agreements --accept-package-agreements --disable-interactivity";
 
-        var first = await RunCaptureWithCodeAsync(wingetPath, args);
+        var first = await RunCaptureWithCodeAsync(wingetPath, silentArgs);
         if (first.ExitCode == 0)
             return string.IsNullOrWhiteSpace(first.Message) ? "Instalação concluída." : first.Message;
 
         await RunCaptureWithCodeAsync(wingetPath, "source reset --force");
         await RunCaptureWithCodeAsync(wingetPath, "source update --disable-interactivity");
-        var retry = await RunCaptureWithCodeAsync(wingetPath, args);
+
+        var interactiveArgs =
+            $"install --id {packageId} -e --source winget " +
+            "--accept-source-agreements --accept-package-agreements --disable-interactivity";
+
+        var retry = await RunCaptureWithCodeAsync(wingetPath, interactiveArgs);
 
         return retry.ExitCode == 0
             ? (string.IsNullOrWhiteSpace(retry.Message) ? "Instalação concluída." : retry.Message)

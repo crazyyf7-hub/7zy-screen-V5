@@ -247,7 +247,7 @@
           <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
           <StackPanel>
             <TextBlock Text="Quick Install" FontSize="30" FontWeight="Bold"/>
-            <TextBlock Text="Instalação silenciosa pelo Windows Package Manager (winget)." Foreground="{StaticResource MutedBrush}"/>
+            <TextBlock Text="Instalação automática pelo Windows Package Manager (winget)." Foreground="{StaticResource MutedBrush}"/>
           </StackPanel>
           <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <WrapPanel Margin="0,20,0,0">
@@ -260,6 +260,8 @@
               <Button Content="Spotify" Tag="Spotify.Spotify" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
               <Button Content="WinRAR" Tag="RARLab.WinRAR" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
               <Button Content="Epic Games" Tag="EpicGames.EpicGamesLauncher" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="Rockstar Games" Tag="RockstarGames.Launcher" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="FiveM" Tag="Cfx.re.FiveM" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
 
               <Button Content="OBS (BN)" Tag="OBS_MODIFICADO_BN.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
               <Button Content="TikTok Chat • 7zy" Tag="7ZY_TikTok_Chat_v3.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>

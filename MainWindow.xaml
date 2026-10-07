@@ -239,19 +239,29 @@
             <TextBlock Text="Quick Install" FontSize="30" FontWeight="Bold"/>
             <TextBlock Text="Instalação silenciosa pelo Windows Package Manager (winget)." Foreground="{StaticResource MutedBrush}"/>
           </StackPanel>
-          <WrapPanel Grid.Row="1" Margin="0,20,0,0">
-            <Button Content="Google Chrome" Tag="Google.Chrome" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="InstallPackage_Click"/>
-            <Button Content="Mozilla Firefox" Tag="Mozilla.Firefox" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="Discord" Tag="Discord.Discord" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="Steam" Tag="Valve.Steam" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="7-Zip" Tag="7zip.7zip" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="VLC" Tag="VideoLAN.VLC" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="Spotify" Tag="Spotify.Spotify" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="WinRAR" Tag="RARLab.WinRAR" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="Epic Games" Tag="EpicGames.EpicGamesLauncher" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-          </WrapPanel>
+          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <WrapPanel Margin="0,20,0,0">
+              <Button Content="Google Chrome" Tag="Google.Chrome" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="InstallPackage_Click"/>
+              <Button Content="Mozilla Firefox" Tag="Mozilla.Firefox" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="Discord" Tag="Discord.Discord" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="Steam" Tag="Valve.Steam" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="7-Zip" Tag="7zip.7zip" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="VLC" Tag="VideoLAN.VLC" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="Spotify" Tag="Spotify.Spotify" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="WinRAR" Tag="RARLab.WinRAR" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+              <Button Content="Epic Games" Tag="EpicGames.EpicGamesLauncher" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+
+              <Button Content="OBS (BN)" Tag="OBS_MODIFICADO_BN.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
+              <Button Content="TikTok Chat • 7zy" Tag="7ZY_TikTok_Chat_v3.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
+              <Button Content="Spotify Lite" Tag="SPOTFY_LITE.rar" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource GoldButton}" Click="CustomPackage_Click"/>
+            </WrapPanel>
+          </ScrollViewer>
           <Border Grid.Row="2" Style="{StaticResource CardStyle}">
-            <TextBlock x:Name="InstallStatus" Text="Selecione um aplicativo." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"/>
+            <StackPanel>
+              <TextBlock x:Name="InstallStatus" Text="Selecione um aplicativo." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"/>
+              <ProgressBar x:Name="InstallProgressBar" Height="8" Margin="0,10,0,0" Minimum="0" Maximum="100" Value="0"/>
+              <TextBlock Text="Apps públicos usam winget. Os pacotes 7zy personalizados são enviados para a pasta Downloads." FontSize="11" Margin="0,8,0,0" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/>
+            </StackPanel>
           </Border>
         </Grid>
 

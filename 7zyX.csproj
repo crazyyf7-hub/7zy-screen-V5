@@ -13,4 +13,11 @@
   <ItemGroup>
     <Using Include="System.IO" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CustomPackages\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

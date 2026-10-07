@@ -1,0 +1,8 @@
+profile_mouseonfootscale -4
+profile_reticulesize -3
+profile_aimdeadzone 15
+profile_aimacceleration 7
+DPI - 400-600
+profile_fpsaimsensitivity
+profile_gamma 35
+profile_fpsfieldOfview 150

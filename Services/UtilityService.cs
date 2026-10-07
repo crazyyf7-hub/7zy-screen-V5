@@ -46,8 +46,11 @@ public sealed class UtilityService
         return $"Limpeza concluída: {freed / 1024d / 1024d:0.0} MB liberados. {failed} arquivos em uso foram ignorados.";
     }
 
-    public Task<string> EmptyRecycleBinAsync() =>
-        RunCaptureAsync("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command "Clear-RecycleBin -Force -ErrorAction SilentlyContinue; Write-Output 'Lixeira limpa.'"");
+    public Task<string> EmptyRecycleBinAsync()
+    {
+        const string command = "Clear-RecycleBin -Force -ErrorAction SilentlyContinue; Write-Output 'Lixeira limpa.'";
+        return RunCaptureAsync("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{command}\"");
+    }
 
     public Task<string> FlushDnsAsync() =>
         RunCaptureAsync("ipconfig.exe", "/flushdns");
@@ -71,10 +74,15 @@ public sealed class UtilityService
     public Task<string> ResetWinsockAsync() =>
         RunCaptureAsync("netsh.exe", "winsock reset");
 
-    public Task<string> CreateRestorePointAsync() =>
-        RunCaptureAsync(
-            "powershell.exe",
-            "-NoProfile -ExecutionPolicy Bypass -Command "Enable-ComputerRestore -Drive ($env:SystemDrive + '\\') -ErrorAction SilentlyContinue; Checkpoint-Computer -Description '7zy X before optimization' -RestorePointType 'MODIFY_SETTINGS'; Write-Output 'Ponto de restauração solicitado.'"");
+    public Task<string> CreateRestorePointAsync()
+    {
+        const string command =
+            "Enable-ComputerRestore -Drive ($env:SystemDrive + '\\') -ErrorAction SilentlyContinue; " +
+            "Checkpoint-Computer -Description '7zy X before optimization' -RestorePointType 'MODIFY_SETTINGS'; " +
+            "Write-Output 'Ponto de restauração solicitado.'";
+
+        return RunCaptureAsync("powershell.exe", $"-NoProfile -ExecutionPolicy Bypass -Command \"{command}\"");
+    }
 
     public Task<string> RestartExplorerAsync() =>
         Task.Run(() =>

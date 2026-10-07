@@ -287,17 +287,54 @@ public partial class MainWindow : Window
 
     private async void Scan_Click(object sender, RoutedEventArgs e)
     {
-        await RunScanAsync();
+        await RunScanAsync("Escaneando PC", true);
     }
 
-    private async Task RunScanAsync()
+    private async void ExtraScan_Click(object sender, RoutedEventArgs e)
+    {
+        await RunScanAsync("Executando novo scan completo", true);
+    }
+
+    private async Task RunScanAsync(string overlayTitle = "Escaneando PC", bool showOverlay = false)
     {
         SidebarScanLabel.Text = "Escaneando…";
         HomeStateText.Text = "SCANNING";
 
+        var startedAt = DateTime.UtcNow;
+
+        if (showOverlay)
+        {
+            ScanOverlayTitle.Text = overlayTitle;
+            ScanOverlayStep.Text = "Preparando análise do sistema…";
+            ScanOverlay.Opacity = 0;
+            ScanOverlay.Visibility = Visibility.Visible;
+            ScanOverlay.BeginAnimation(
+                OpacityProperty,
+                new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160)));
+        }
+
+        var progress = new Progress<string>(message =>
+        {
+            SidebarScanLabel.Text = message.TrimEnd('…');
+            if (showOverlay)
+                ScanOverlayStep.Text = message;
+        });
+
         try
         {
-            var result = await _scanner.ScanAsync();
+            var result = await _scanner.ScanAsync(progress);
+
+            if (showOverlay)
+            {
+                var elapsed = DateTime.UtcNow - startedAt;
+                var minimum = TimeSpan.FromMilliseconds(950);
+                if (elapsed < minimum)
+                    await Task.Delay(minimum - elapsed);
+
+                ScanOverlayStep.Text = "Scan concluído. Atualizando resultados…";
+                await Task.Delay(180);
+            }
+
             SidebarPercent.Text = $"{result.Percent}%";
             HomePercent.Text = $"{result.Percent}%";
             SidebarScanLabel.Text = result.ScannedAt.ToString("dd/MM HH:mm");
@@ -318,6 +355,26 @@ public partial class MainWindow : Window
             SidebarScanLabel.Text = "Scan falhou";
             HomeStateText.Text = "ERROR";
             ScanSummaryText.Text = ex.Message;
+
+            if (showOverlay)
+            {
+                ScanOverlayTitle.Text = "Falha no scan";
+                ScanOverlayStep.Text = ex.Message;
+                await Task.Delay(900);
+            }
+        }
+        finally
+        {
+            if (showOverlay)
+            {
+                var fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(180));
+                fade.Completed += (_, _) =>
+                {
+                    ScanOverlay.Visibility = Visibility.Collapsed;
+                    ScanOverlay.Opacity = 1;
+                };
+                ScanOverlay.BeginAnimation(OpacityProperty, fade);
+            }
         }
     }
 

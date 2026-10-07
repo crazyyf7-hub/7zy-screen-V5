@@ -1,0 +1,71 @@
+<Application x:Class="SevenzyX.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    StartupUri="MainWindow.xaml">
+  <Application.Resources>
+    <SolidColorBrush x:Key="BgBrush" Color="#F7F7F4"/>
+    <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="GoldBrush" Color="#C8A96B"/>
+    <SolidColorBrush x:Key="GoldStrongBrush" Color="#B88A3B"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#1B1B1B"/>
+    <SolidColorBrush x:Key="MutedBrush" Color="#777777"/>
+    <SolidColorBrush x:Key="LineBrush" Color="#E9E9E5"/>
+
+    <Style TargetType="Window">
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="Background" Value="{StaticResource BgBrush}"/>
+      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    </Style>
+
+    <Style x:Key="GoldButton" TargetType="Button">
+      <Setter Property="Background" Value="{StaticResource GoldStrongBrush}"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderBrush" Value="{StaticResource GoldStrongBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="16,10"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Bd"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="10"
+                    RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+              </Border.RenderTransform>
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.9"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Bd" Property="RenderTransform">
+                  <Setter.Value><ScaleTransform ScaleX="0.98" ScaleY="0.98"/></Setter.Value>
+                </Setter>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="OutlineButton" TargetType="Button" BasedOn="{StaticResource GoldButton}">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="Foreground" Value="{StaticResource GoldStrongBrush}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource GoldBrush}"/>
+    </Style>
+
+    <Style x:Key="CardStyle" TargetType="Border">
+      <Setter Property="Background" Value="{StaticResource CardBrush}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource LineBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="16"/>
+      <Setter Property="Padding" Value="18"/>
+    </Style>
+  </Application.Resources>
+</Application>

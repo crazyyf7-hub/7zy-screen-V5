@@ -10,8 +10,15 @@ public enum TweakRisk
 public sealed class TweakDefinition
 {
     public required string Id { get; init; }
+    public required string Category { get; init; }
     public required string Title { get; init; }
     public required string Description { get; init; }
     public TweakRisk Risk { get; init; }
     public bool Selected { get; set; }
+    public string RiskLabel => Risk switch
+    {
+        TweakRisk.Safe => "Safe",
+        TweakRisk.Moderate => "Moderate",
+        _ => "Aggressive"
+    };
 }

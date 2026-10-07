@@ -25,16 +25,26 @@
         </Grid>
       </Border>
 
-      <Border Grid.Column="1" Width="410" Padding="34" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource CardStyle}">
+      <Border Grid.Column="1" Width="380" Padding="26" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource CardStyle}">
         <StackPanel>
           <TextBlock Text="Bem-vindo" FontSize="30" FontWeight="Bold"/>
           <TextBlock Text="Entre com seu acesso de comprador ou administrador." Foreground="{StaticResource MutedBrush}" Margin="0,6,0,24"/>
           <TextBlock Text="Usuário" FontWeight="SemiBold"/>
-          <TextBox x:Name="UsernameBox" Height="42" Margin="0,6,0,14"/>
+          <TextBox x:Name="UsernameBox"
+                   Height="32"
+                   Margin="0,5,0,10"
+                   Padding="8,0"
+                   VerticalContentAlignment="Center"
+                   AcceptsReturn="False"
+                   TextWrapping="NoWrap"/>
           <TextBlock Text="Senha" FontWeight="SemiBold"/>
-          <PasswordBox x:Name="PasswordBox" Height="42" Margin="0,6,0,12"/>
+          <PasswordBox x:Name="PasswordBox"
+                       Height="32"
+                       Margin="0,5,0,10"
+                       Padding="8,0"
+                       VerticalContentAlignment="Center"/>
           <TextBlock x:Name="LoginStatus" Foreground="#B94040" Margin="0,4,0,8"/>
-          <Button x:Name="LoginButton" Content="Entrar" Height="46" Style="{StaticResource GoldButton}" Click="LoginButton_Click"/>
+          <Button x:Name="LoginButton" Content="Entrar" Height="40" Style="{StaticResource GoldButton}" Click="LoginButton_Click"/>
         </StackPanel>
       </Border>
     </Grid>

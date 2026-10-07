@@ -8,12 +8,16 @@ public sealed class UtilityService
     {
         if (string.IsNullOrWhiteSpace(packageId)) return "Pacote inválido.";
 
-        var winget = await RunCaptureWithCodeAsync("winget.exe", "--version");
+        var wingetPath = await ResolveWingetAsync();
+        if (string.IsNullOrWhiteSpace(wingetPath))
+            return "Winget não foi encontrado. Abra a Microsoft Store, atualize o App Installer e tente novamente.";
+
+        var winget = await RunCaptureWithCodeAsync(wingetPath, "--version");
         if (winget.ExitCode != 0)
-            return "Winget não está disponível neste Windows. Instale/atualize o App Installer da Microsoft Store.";
+            return $"Winget foi encontrado, mas não iniciou corretamente. {winget.Message}";
 
         var installed = await RunCaptureWithCodeAsync(
-            "winget.exe",
+            wingetPath,
             $"list --id {packageId} -e --accept-source-agreements --disable-interactivity");
 
         if (installed.ExitCode == 0 &&
@@ -24,12 +28,13 @@ public sealed class UtilityService
             $"install --id {packageId} -e --silent " +
             "--accept-source-agreements --accept-package-agreements --disable-interactivity";
 
-        var first = await RunCaptureWithCodeAsync("winget.exe", args);
+        var first = await RunCaptureWithCodeAsync(wingetPath, args);
         if (first.ExitCode == 0)
             return string.IsNullOrWhiteSpace(first.Message) ? "Instalação concluída." : first.Message;
 
-        await RunCaptureWithCodeAsync("winget.exe", "source update --disable-interactivity");
-        var retry = await RunCaptureWithCodeAsync("winget.exe", args);
+        await RunCaptureWithCodeAsync(wingetPath, "source reset --force");
+        await RunCaptureWithCodeAsync(wingetPath, "source update --disable-interactivity");
+        var retry = await RunCaptureWithCodeAsync(wingetPath, args);
 
         return retry.ExitCode == 0
             ? (string.IsNullOrWhiteSpace(retry.Message) ? "Instalação concluída." : retry.Message)
@@ -40,9 +45,9 @@ public sealed class UtilityService
         string bundledFileName,
         IProgress<double>? progress = null)
     {
-        var source = Path.Combine(AppContext.BaseDirectory, "CustomPackages", bundledFileName);
-        if (!File.Exists(source))
-            return $"Arquivo {bundledFileName} não foi encontrado no pacote do 7zy X.";
+        var source = ResolveCustomPackage(bundledFileName);
+        if (source is null)
+            return $"Arquivo {bundledFileName} não foi encontrado. Baixe o pacote personalizado e deixe o .RAR em Downloads ou ao lado do 7zyX.exe.";
 
         var downloads = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
@@ -54,6 +59,14 @@ public sealed class UtilityService
 
         try
         {
+            if (string.Equals(
+                Path.GetFullPath(source),
+                Path.GetFullPath(destination),
+                StringComparison.OrdinalIgnoreCase))
+            {
+                progress?.Report(1);
+                return $"Pronto. {bundledFileName} já está em Downloads.";
+            }
             await using var input = new FileStream(
                 source, FileMode.Open, FileAccess.Read, FileShare.Read,
                 1024 * 1024, useAsync: true);
@@ -85,6 +98,62 @@ public sealed class UtilityService
             try { if (File.Exists(temp)) File.Delete(temp); } catch { }
             return "Falha ao copiar para Downloads: " + ex.Message;
         }
+    }
+
+    private static string? ResolveCustomPackage(string fileName)
+    {
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var downloads = Path.Combine(userProfile, "Downloads");
+        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+        var candidates = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "CustomPackages", fileName),
+            Path.Combine(AppContext.BaseDirectory, fileName),
+            Path.Combine(downloads, fileName),
+            Path.Combine(desktop, fileName)
+        };
+
+        return candidates.FirstOrDefault(File.Exists);
+    }
+
+    private static async Task<string?> ResolveWingetAsync()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var alias = Path.Combine(localAppData, "Microsoft", "WindowsApps", "winget.exe");
+
+        foreach (var candidate in new[] { alias, "winget.exe" })
+        {
+            if (!string.Equals(candidate, "winget.exe", StringComparison.OrdinalIgnoreCase) &&
+                !File.Exists(candidate))
+                continue;
+
+            var probe = await RunCaptureWithCodeAsync(candidate, "--version");
+            if (probe.ExitCode == 0)
+                return candidate;
+        }
+
+        try
+        {
+            const string script =
+                "$p=(Get-AppxPackage Microsoft.DesktopAppInstaller | Sort-Object Version -Descending | Select-Object -First 1 -ExpandProperty InstallLocation); " +
+                "if($p){Join-Path $p 'winget.exe'}";
+
+            var ps = await RunCaptureWithCodeAsync(
+                "powershell.exe",
+                $"-NoProfile -ExecutionPolicy Bypass -Command \"{script}\"");
+
+            if (ps.ExitCode == 0)
+            {
+                var candidate = ps.Message.Trim();
+                if (candidate.EndsWith("winget.exe", StringComparison.OrdinalIgnoreCase) &&
+                    File.Exists(candidate))
+                    return candidate;
+            }
+        }
+        catch { }
+
+        return null;
     }
 
     public async Task<string> CleanUserTempAsync()

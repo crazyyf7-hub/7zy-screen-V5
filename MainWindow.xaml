@@ -247,7 +247,8 @@
             <Button Content="7-Zip" Tag="7zip.7zip" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
             <Button Content="VLC" Tag="VideoLAN.VLC" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
             <Button Content="Spotify" Tag="Spotify.Spotify" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
-            <Button Content="OBS Studio" Tag="OBSProject.OBSStudio" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+            <Button Content="WinRAR" Tag="RARLab.WinRAR" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
+            <Button Content="Epic Games" Tag="EpicGames.EpicGamesLauncher" Width="190" Height="58" Margin="0,0,12,12" Style="{StaticResource OutlineButton}" Click="InstallPackage_Click"/>
           </WrapPanel>
           <Border Grid.Row="2" Style="{StaticResource CardStyle}">
             <TextBlock x:Name="InstallStatus" Text="Selecione um aplicativo." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"/>
@@ -324,7 +325,7 @@
             <StackPanel>
               <TextBlock Text="System summary" FontSize="18" FontWeight="Bold"/>
               <TextBlock x:Name="SystemSummaryText" Text="Carregando..." Margin="0,10,0,20" TextWrapping="Wrap"/>
-              <Button Content="Executar novo scan completo" Width="220" HorizontalAlignment="Left" Style="{StaticResource GoldButton}" Click="Scan_Click"/>
+              <Button Content="Executar novo scan completo" Width="220" HorizontalAlignment="Left" Style="{StaticResource GoldButton}" Click="ExtraScan_Click"/>
             </StackPanel>
           </Border>
         </Grid>
@@ -365,6 +366,44 @@
             </DockPanel>
           </Border>
         </Grid>
+      </Grid>
+
+      <Grid x:Name="ScanOverlay"
+            Grid.ColumnSpan="2"
+            Panel.ZIndex="100"
+            Background="#B3000000"
+            Visibility="Collapsed">
+        <Border Width="520"
+                Padding="30"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Style="{StaticResource CardStyle}">
+          <StackPanel>
+            <TextBlock Text="♛" FontSize="42" HorizontalAlignment="Center" Foreground="{StaticResource GoldStrongBrush}"/>
+            <TextBlock x:Name="ScanOverlayTitle"
+                       Text="Escaneando PC"
+                       FontSize="25"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,4,0,6"/>
+            <TextBlock x:Name="ScanOverlayStep"
+                       Text="Preparando análise…"
+                       Foreground="{StaticResource MutedBrush}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       MinHeight="42"
+                       Margin="0,0,0,18"/>
+            <ProgressBar x:Name="ScanProgressBar"
+                         Height="9"
+                         IsIndeterminate="True"
+                         Margin="0,0,0,16"/>
+            <TextBlock Text="O resultado será atualizado automaticamente quando o scan terminar."
+                       FontSize="11"
+                       Foreground="{StaticResource MutedBrush}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"/>
+          </StackPanel>
+        </Border>
       </Grid>
     </Grid>
   </Grid>

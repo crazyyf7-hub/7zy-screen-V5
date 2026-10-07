@@ -106,15 +106,33 @@ public sealed class UtilityService
         var downloads = Path.Combine(userProfile, "Downloads");
         var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
-        var candidates = new[]
+        var aliases = fileName switch
         {
-            Path.Combine(AppContext.BaseDirectory, "CustomPackages", fileName),
-            Path.Combine(AppContext.BaseDirectory, fileName),
-            Path.Combine(downloads, fileName),
-            Path.Combine(desktop, fileName)
+            "OBS_MODIFICADO_BN.rar" => new[] { "OBS_MODIFICADO_BN.rar", "OBS MODIFICADO (1).rar", "OBS MODIFICADO.rar" },
+            "SPOTFY_LITE.rar" => new[] { "SPOTFY_LITE.rar", "SPOTFY LITE.rar", "SPOTIFY LITE.rar" },
+            "7ZY_TikTok_Chat_v3.rar" => new[] { "7ZY_TikTok_Chat_v3.rar", "7ZY TikTok Chat v3.rar" },
+            _ => new[] { fileName }
         };
 
-        return candidates.FirstOrDefault(File.Exists);
+        var folders = new[]
+        {
+            Path.Combine(AppContext.BaseDirectory, "CustomPackages"),
+            AppContext.BaseDirectory,
+            downloads,
+            desktop
+        };
+
+        foreach (var folder in folders)
+        {
+            foreach (var alias in aliases)
+            {
+                var candidate = Path.Combine(folder, alias);
+                if (File.Exists(candidate))
+                    return candidate;
+            }
+        }
+
+        return null;
     }
 
     private static async Task<string?> ResolveWingetAsync()

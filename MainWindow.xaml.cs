@@ -385,12 +385,50 @@ public partial class MainWindow : Window
         var old = button.Content;
         button.IsEnabled = false;
         button.Content = "Instalando…";
-        InstallStatus.Text = $"Instalando {old}…";
+        InstallProgressBar.IsIndeterminate = true;
+        InstallStatus.Text = $"Instalando {old} pelo winget…";
 
-        InstallStatus.Text = await _utility.InstallWingetAsync(packageId);
+        try
+        {
+            InstallStatus.Text = await _utility.InstallWingetAsync(packageId);
+        }
+        finally
+        {
+            InstallProgressBar.IsIndeterminate = false;
+            InstallProgressBar.Value = 0;
+            button.Content = old;
+            button.IsEnabled = true;
+        }
+    }
 
-        button.Content = old;
-        button.IsEnabled = true;
+    private async void CustomPackage_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string fileName) return;
+
+        var old = button.Content;
+        button.IsEnabled = false;
+        button.Content = "Preparando…";
+        InstallProgressBar.IsIndeterminate = false;
+        InstallProgressBar.Value = 0;
+        InstallStatus.Text = $"Copiando {old} para Downloads…";
+
+        var progress = new Progress<double>(value =>
+        {
+            var percent = Math.Clamp(value * 100, 0, 100);
+            InstallProgressBar.Value = percent;
+            InstallStatus.Text = $"Copiando {old} para Downloads… {percent:0}%";
+        });
+
+        try
+        {
+            InstallStatus.Text = await _utility.CopyBundledPackageToDownloadsAsync(fileName, progress);
+            InstallProgressBar.Value = 100;
+        }
+        finally
+        {
+            button.Content = old;
+            button.IsEnabled = true;
+        }
     }
 
     private async void CleanTemp_Click(object sender, RoutedEventArgs e)

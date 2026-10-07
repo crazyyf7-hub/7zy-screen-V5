@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using System.Text;
+using System.Text.Json;
 using SevenzyX.Models;
 
 namespace SevenzyX.Services;
@@ -8,27 +8,35 @@ public sealed class AuthService
 {
     private sealed class Account
     {
-        public required string Username { get; init; }
-        public required string Hash { get; init; }
-        public bool IsAdmin { get; init; }
+        public string Username { get; set; } = "";
+        public string Salt { get; set; } = "";
+        public string Hash { get; set; } = "";
+        public bool IsAdmin { get; set; }
         public bool IsBlocked { get; set; }
         public DateTime? ExpiresAtUtc { get; set; }
     }
 
-    private readonly List<Account> _users = new()
-    {
-        new Account { Username = "admin", Hash = Hash("7zyx-admin"), IsAdmin = true },
-        new Account { Username = "buyer", Hash = Hash("7zyx-buyer"), IsAdmin = false, ExpiresAtUtc = DateTime.UtcNow.AddDays(30) }
-    };
+    private readonly string _storePath;
+    private List<Account> _users = new();
 
     public string LastError { get; private set; } = "";
+
+    public AuthService()
+    {
+        var dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "7zyX");
+        Directory.CreateDirectory(dir);
+        _storePath = Path.Combine(dir, "accounts.json");
+        LoadOrSeed();
+    }
 
     public (bool Ok, bool IsAdmin) Login(string username, string password)
     {
         LastError = "";
         var user = Find(username);
 
-        if (user is null || user.Hash != Hash(password))
+        if (user is null || !Verify(password, user))
         {
             LastError = "Usuário ou senha inválidos.";
             return (false, false);
@@ -50,13 +58,17 @@ public sealed class AuthService
     }
 
     public IReadOnlyList<UserAccountInfo> GetUsers() =>
-        _users.Select(x => new UserAccountInfo
-        {
-            Username = x.Username,
-            IsAdmin = x.IsAdmin,
-            IsBlocked = x.IsBlocked,
-            ExpiresAtUtc = x.ExpiresAtUtc
-        }).ToList();
+        _users
+            .OrderByDescending(x => x.IsAdmin)
+            .ThenBy(x => x.Username, StringComparer.OrdinalIgnoreCase)
+            .Select(x => new UserAccountInfo
+            {
+                Username = x.Username,
+                IsAdmin = x.IsAdmin,
+                IsBlocked = x.IsBlocked,
+                ExpiresAtUtc = x.ExpiresAtUtc
+            })
+            .ToList();
 
     public bool CreateBuyer(string username, string password, int validityDays, out string error)
     {
@@ -68,15 +80,18 @@ public sealed class AuthService
         if (validityDays < 1 || validityDays > 3650) { error = "Validade inválida."; return false; }
         if (Find(username) is not null) { error = "Usuário já existe."; return false; }
 
+        var salt = RandomNumberGenerator.GetBytes(16);
         _users.Add(new Account
         {
             Username = username,
-            Hash = Hash(password),
+            Salt = Convert.ToBase64String(salt),
+            Hash = HashPassword(password, salt),
             IsAdmin = false,
             IsBlocked = false,
             ExpiresAtUtc = DateTime.UtcNow.AddDays(validityDays)
         });
 
+        Save();
         return true;
     }
 
@@ -88,6 +103,7 @@ public sealed class AuthService
         if (user.IsAdmin) { error = "Admin principal não pode ser bloqueado."; return false; }
 
         user.IsBlocked = !user.IsBlocked;
+        Save();
         return true;
     }
 
@@ -101,6 +117,7 @@ public sealed class AuthService
         if (days < 1 || days > 3650) { error = "Validade inválida."; return false; }
 
         user.ExpiresAtUtc = DateTime.UtcNow.AddDays(days);
+        Save();
         return true;
     }
 
@@ -113,15 +130,77 @@ public sealed class AuthService
         if (user.IsAdmin) { error = "Admin principal não pode ser removido."; return false; }
 
         _users.Remove(user);
+        Save();
         return true;
     }
 
     private Account? Find(string username) =>
-        _users.FirstOrDefault(x => string.Equals(x.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
+        _users.FirstOrDefault(x =>
+            string.Equals(x.Username, username.Trim(), StringComparison.OrdinalIgnoreCase));
 
-    private static string Hash(string value)
+    private void LoadOrSeed()
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        return Convert.ToHexString(bytes);
+        try
+        {
+            if (File.Exists(_storePath))
+                _users = JsonSerializer.Deserialize<List<Account>>(File.ReadAllText(_storePath)) ?? new();
+        }
+        catch
+        {
+            _users = new();
+        }
+
+        if (_users.Count > 0) return;
+
+        _users.Add(CreateSeed("admin", "7zyx-admin", true, null));
+        _users.Add(CreateSeed("buyer", "7zyx-buyer", false, DateTime.UtcNow.AddDays(30)));
+        Save();
+    }
+
+    private static Account CreateSeed(string username, string password, bool admin, DateTime? expires)
+    {
+        var salt = RandomNumberGenerator.GetBytes(16);
+        return new Account
+        {
+            Username = username,
+            Salt = Convert.ToBase64String(salt),
+            Hash = HashPassword(password, salt),
+            IsAdmin = admin,
+            ExpiresAtUtc = expires
+        };
+    }
+
+    private void Save()
+    {
+        var temp = _storePath + ".tmp";
+        var json = JsonSerializer.Serialize(_users, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(temp, json);
+        File.Move(temp, _storePath, true);
+    }
+
+    private static string HashPassword(string password, byte[] salt)
+    {
+        var bytes = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            120_000,
+            HashAlgorithmName.SHA256,
+            32);
+        return Convert.ToBase64String(bytes);
+    }
+
+    private static bool Verify(string password, Account user)
+    {
+        try
+        {
+            var salt = Convert.FromBase64String(user.Salt);
+            var expected = Convert.FromBase64String(user.Hash);
+            var actual = Convert.FromBase64String(HashPassword(password, salt));
+            return CryptographicOperations.FixedTimeEquals(actual, expected);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
